@@ -67,7 +67,6 @@ public class ScannerService extends Service {
         }
 
         List<Map.Entry<String,Integer>> x=entriesSortedByValues(fileExtensionsCount);
-        Log.i("kbiwbdoivucbwevoucbweoc","file extensions list count"+x.size());
 
         int i =0;
         for (Map.Entry<String,Integer> entry:x){

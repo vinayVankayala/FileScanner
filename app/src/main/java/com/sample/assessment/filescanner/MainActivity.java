@@ -92,10 +92,9 @@ public class MainActivity extends AppCompatActivity {
             Long averageSize=0L;
 
             da  = (HashMap) intent.getSerializableExtra("z");
-            averageSize = intent.getLongExtra("w",Long.valueOf(1));
-            fileNames = (ArrayList<String>) intent.getSerializableExtra("x");
-            fileSizes = (ArrayList<Long>)intent.getSerializableExtra("y");
-            Log.i("kbiwbdoivucbwevoucbweoc","onrecieve d"+d);
+            averageSize = intent.getLongExtra("averageSize",Long.valueOf(1));
+            fileNames = (ArrayList<String>) intent.getSerializableExtra("fileNames");
+            fileSizes = (ArrayList<Long>)intent.getSerializableExtra("fileSizes");
 
             for(int i=0;i<fileNames.size();i++){
                 d +=fileNames.get(i)+":"+fileSizes.get(i);
