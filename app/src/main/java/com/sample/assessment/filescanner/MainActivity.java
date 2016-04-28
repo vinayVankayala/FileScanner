@@ -1,30 +1,25 @@
 package com.sample.assessment.filescanner;
 
 import android.Manifest;
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.text.method.ScrollingMovementMethod;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import org.w3c.dom.Text;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,6 +27,7 @@ import java.util.Map;
 public class MainActivity extends AppCompatActivity {
 
     Button start,stop;
+    FloatingActionButton floatBtn;
     TextView fileExtension,fileSize,extensionFrequency;
     MyReceiver myReceiver;
     public static final int MY_PERMISSIONS_REQUEST_CONTACTS=1;
@@ -40,9 +36,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        ImageButton sharingButton = new ImageButton(this);
-        sharingButton.setLayoutParams(new ViewGroup.LayoutParams(Toolbar.LayoutParams.WRAP_CONTENT, Toolbar.LayoutParams.WRAP_CONTENT));
-        sharingButton.setClickable(false);
+        floatBtn = (FloatingActionButton) findViewById(R.id.fab);
+
+        floatBtn.setVisibility(View.GONE);
         start = (Button)findViewById(R.id.start);
         stop = (Button)findViewById(R.id.stop);
         extensionFrequency = (TextView) findViewById(R.id.extensionFrequency);
@@ -66,12 +62,11 @@ public class MainActivity extends AppCompatActivity {
                     Manifest.permission.WRITE_EXTERNAL_STORAGE)
                     != PackageManager.PERMISSION_GRANTED) {
 
-                    // No explanation needed, we can request the permission.
 
                     ActivityCompat.requestPermissions(MainActivity.this,
-                            new String[]{Manifest.permission.READ_CONTACTS},
+                            new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
                             MY_PERMISSIONS_REQUEST_CONTACTS);
-            }
+                }
 
         }
     });
@@ -99,9 +94,11 @@ public class MainActivity extends AppCompatActivity {
         public  ArrayList<Long> fileSizes;
         @Override
         public void onReceive(Context arg0, Intent intent) {
-            String d="";
-            String c="";
+            String fileExtensionString="";
+            String extensionFrequencyString="";
             Long averageSize=0L;
+            NotificationManager mgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+            mgr.cancel(9999);
 
             da  = (HashMap) intent.getSerializableExtra("z");
             averageSize = intent.getLongExtra("averageSize",Long.valueOf(1));
@@ -109,15 +106,27 @@ public class MainActivity extends AppCompatActivity {
             fileSizes = (ArrayList<Long>)intent.getSerializableExtra("fileSizes");
 
             for(int i=0;i<fileNames.size();i++){
-                d +=fileNames.get(i)+":"+fileSizes.get(i);
+                fileExtensionString +=fileNames.get(i)+":"+fileSizes.get(i);
             }
             fileExtension.setText("");
-            fileExtension.setText(d);
+            fileExtension.setText(fileExtensionString);
             fileSize.setText(averageSize+"");
             for(Map.Entry<String,Long> f1 : da.entrySet()){
-                c+=f1.getKey()+":"+f1.getValue()+"/n";
+                extensionFrequencyString+=f1.getKey()+":"+f1.getValue()+"/n";
             }
-            extensionFrequency.setText(c);
+            extensionFrequency.setText(extensionFrequencyString);
+            floatBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
+                    sharingIntent.setType("text/plain");
+                    sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "Subject Here");
+                    sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, "");
+                    startActivity(Intent.createChooser(sharingIntent, "Share via"));
+                }
+            });
+            floatBtn.setVisibility(View.VISIBLE);
+
         }
     }
 
@@ -146,8 +155,23 @@ public class MainActivity extends AppCompatActivity {
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     Intent intent = new Intent(getApplicationContext(), ScannerService.class);
                     startService(intent);
-                }else {
-                    Toast.makeText(this,"Permission to access SD card denied",Toast.LENGTH_SHORT).show();
+                    NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                    Notification notification = new Notification(R.drawable.launcher, "Scanning", System.currentTimeMillis());
+                    notificationManager.notify(9999, notification);
+                }else if(grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_DENIED) {
+                    if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this,
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                        ActivityCompat.requestPermissions(MainActivity.this,
+                                new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                                MY_PERMISSIONS_REQUEST_CONTACTS);
+
+                    }else {
+
+                        Toast.makeText(this, "Permission to access SD card denied.Exiting.", Toast.LENGTH_LONG).show();
+                        MainActivity.this.finish();
+
+                    }
                 }
         }
     }
