@@ -30,7 +30,7 @@ public class MainActivity extends AppCompatActivity {
     FloatingActionButton floatBtn;
     TextView fileExtension,fileSize,extensionFrequency;
     MyReceiver myReceiver;
-    public static final int MY_PERMISSIONS_REQUEST_CONTACTS=1;
+    public static final int MY_PERMISSIONS_REQUEST=1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
 
                     ActivityCompat.requestPermissions(MainActivity.this,
                             new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                            MY_PERMISSIONS_REQUEST_CONTACTS);
+                            MY_PERMISSIONS_REQUEST);
                 }
 
         }
@@ -150,7 +150,7 @@ public class MainActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
         switch (requestCode) {
-            case MY_PERMISSIONS_REQUEST_CONTACTS:
+            case MY_PERMISSIONS_REQUEST:
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     Intent intent = new Intent(getApplicationContext(), ScannerService.class);
@@ -164,7 +164,7 @@ public class MainActivity extends AppCompatActivity {
                             Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
                         ActivityCompat.requestPermissions(MainActivity.this,
                                 new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                                MY_PERMISSIONS_REQUEST_CONTACTS);
+                                MY_PERMISSIONS_REQUEST);
 
                     }else {
 
