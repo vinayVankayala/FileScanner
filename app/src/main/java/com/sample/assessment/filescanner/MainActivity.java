@@ -1,10 +1,14 @@
 package com.sample.assessment.filescanner;
 
+import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.method.ScrollingMovementMethod;
@@ -30,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
     Button start,stop;
     TextView fileExtension,fileSize,extensionFrequency;
     MyReceiver myReceiver;
+    public static final int MY_PERMISSIONS_REQUEST_CONTACTS=1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,8 +47,6 @@ public class MainActivity extends AppCompatActivity {
         stop = (Button)findViewById(R.id.stop);
         extensionFrequency = (TextView) findViewById(R.id.extensionFrequency);
         extensionFrequency.setMovementMethod(new ScrollingMovementMethod());
-
-
         fileSize = (TextView) findViewById(R.id.fileSize);
         fileExtension = (TextView) findViewById(R.id.fileExtension);
         fileExtension.setMovementMethod(new ScrollingMovementMethod());
@@ -59,8 +62,17 @@ public class MainActivity extends AppCompatActivity {
         start.setOnClickListener(new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            Intent intent= new Intent(getApplicationContext(),ScannerService.class);
-            startService(intent);
+            if (ContextCompat.checkSelfPermission(MainActivity.this,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    != PackageManager.PERMISSION_GRANTED) {
+
+                    // No explanation needed, we can request the permission.
+
+                    ActivityCompat.requestPermissions(MainActivity.this,
+                            new String[]{Manifest.permission.READ_CONTACTS},
+                            MY_PERMISSIONS_REQUEST_CONTACTS);
+            }
+
         }
     });
         stop.setOnClickListener(new View.OnClickListener() {
@@ -124,5 +136,19 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_CONTACTS:
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Intent intent = new Intent(getApplicationContext(), ScannerService.class);
+                    startService(intent);
+                }else {
+                    Toast.makeText(this,"Permission to access SD card denied",Toast.LENGTH_SHORT).show();
+                }
+        }
     }
 }

@@ -89,23 +89,22 @@ public class ScannerService extends Service {
         return super.onStartCommand(intent, flags, startId);
     }
 
-        static <K,V extends Comparable<? super V>>
-        List<Map.Entry<String, Integer>> entriesSortedByValues(Map<String, Integer> map) {
+    static <K,V extends Comparable<? super V>>
+    List<Map.Entry<K, V>> entriesSortedByValues(Map<K,V> map) {
 
-            List<Map.Entry<String, Integer>> sortedEntries = new ArrayList<>(map.entrySet());
+        List<Map.Entry<K,V>> sortedEntries = new ArrayList<Map.Entry<K,V>>(map.entrySet());
 
-            Collections.sort(sortedEntries,
-                    new Comparator<Map.Entry<K,V>>() {
-                        @Override
-                        public int compare(Map.Entry<K,V> e1, Map.Entry<K,V> e2) {
-                            return e2.getValue()
-                            e1.getValue();
-                        }
+        Collections.sort(sortedEntries,
+                new Comparator<Map.Entry<K,V>>() {
+                    @Override
+                    public int compare(Map.Entry<K,V> e1, Map.Entry<K,V> e2) {
+                        return e1.getValue().compareTo(e2.getValue());
                     }
-            );
+                }
+        );
 
-            return sortedEntries;
-        }
+        return sortedEntries;
+    }
 
     public void getFiles(File[] list){
         listOfFiles= new ArrayList<>();
